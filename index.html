@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Car Shop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="logo">Car Shop</div>
+  <div class="header-right">
+    <a href="login.html" id="login-button" class="login-button">Login</a>
+
+    <div id="user-menu" class="user-menu">
+      <div class="menu-icon" onclick="toggleMenu()" tabindex="0" role="button" aria-label="User Menu">⋯</div>
+      <div class="dropdown" id="dropdown-menu">
+        <a href="#">Settings</a>
+        <a href="#">Feedback</a>
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="dashboard" id="dashboard">
+  <h1 id="welcome-message">Welcome to Car Shop</h1>
+  <div class="buttons-container">
+    <button class="car-button new-car" onclick="viewNewCars()">View New Cars</button>
+    <button class="car-button old-car" onclick="viewUsedCars()">View Used Cars</button>
+  </div>
+</div>
+
+<script>
+  function viewNewCars() {
+    alert("Redirecting to New Cars page...");
+  }
+
+  function viewUsedCars() {
+    alert("Redirecting to Used Cars page...");
+  }
+
+  function toggleMenu() {
+    document.getElementById('dropdown-menu').classList.toggle('show');
+  }
+
+  function logout() {
+    localStorage.removeItem('username');
+    window.location.reload();
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const username = localStorage.getItem("username");
+    const loginBtn = document.getElementById("login-button");
+    const userMenu = document.getElementById("user-menu");
+
+    if (username) {
+      document.getElementById("welcome-message").textContent = `Welcome, ${username}!`;
+      loginBtn.style.display = "none";
+      userMenu.style.display = "block";
+    } else {
+      loginBtn.style.display = "inline-block";
+      userMenu.style.display = "none";
+    }
+
+    // Close dropdown when clicking outside
+    window.addEventListener("click", function (e) {
+      const dropdown = document.getElementById("dropdown-menu");
+      if (!e.target.closest('.menu-icon')) {
+        dropdown.classList.remove('show');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
