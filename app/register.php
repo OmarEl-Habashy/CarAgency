@@ -1,5 +1,10 @@
 <?php
-session_start(); 
+session_start();
+
+if (isset($_SESSION['username'])) {
+    header("Location: feed.php");
+    exit();
+}
 require_once 'database.php'; 
 require_once 'userdao.php'; 
 require_once 'User.php'; // Add this line to include User class
@@ -15,10 +20,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $userDAO = new userdao($conn);
         $bio = "This is a default bio."; 
 
-        // Create a User object first
         $user = new User(null, $username, $email, password_hash($password, PASSWORD_DEFAULT), $bio);
         
-        // Pass the User object to insertUser
         if ($userDAO->insertUser($user)) {
             $_SESSION['username'] = $username; 
             header("Location: feed.php");
