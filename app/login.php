@@ -165,7 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
 
         <div class="bottom-link">
-            <p>Don't have an account? <a href="register.html">Register</a></p>
+            <p>Don't have an account? <a href="register.php">Register</a></p>
         </div>
     </div>
 </div>

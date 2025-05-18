@@ -1,16 +1,17 @@
 <?php
 session_start();
-require_once 'database.php'; // For Database class
-require_once 'userdao.php';  // For UserDAO class
-require_once 'user.php';     // For User class
+require_once 'database.php';
+require_once 'userdao.php';
+require_once 'user.php';
 require_once 'postdao.php';
+
 if (!isset($_SESSION['username'])) {
-    header("Location: register.php"); // Redirect to registration if not logged in
+    header("Location: register.php");
     exit();
 }
 
 $loggedInUsername = $_SESSION['username'];
-$profileUsername = isset($_GET['username']) ? $_GET['username'] : $loggedInUsername; // View own or other's profile
+$profileUsername = isset($_GET['username']) ? $_GET['username'] : $loggedInUsername;
 
 $db = new database();
 $conn = $db->connect();
@@ -20,7 +21,7 @@ $followerCount = 0;
 $followingCount = 0;
 $profile_error = '';
 $isOwnProfile = ($loggedInUsername === $profileUsername);
-$isFollowing = false; // For follow/unfollow button
+$isFollowing = false;
 
 if ($conn) {
     $userDAO = new userdao($conn);
@@ -31,15 +32,13 @@ if ($conn) {
         $followingCount = $userDAO->getFollowingCount($user->getUserId());
         $postDAO = new postdao($conn);
         $posts = $postDAO->getPostsByUserId($user->getUserId());
-    
-        // If viewing someone else's profile, check if the logged-in user is following them
+
         if (!$isOwnProfile) {
             $loggedInUser = $userDAO->getUserByUsername($loggedInUsername);
             if ($loggedInUser) {
                 $isFollowing = $userDAO->isFollowing($loggedInUser->getUserId(), $user->getUserId());
             }
         }
-
     } else {
         $profile_error = "User not found.";
     }
@@ -47,27 +46,22 @@ if ($conn) {
     $profile_error = "Failed to connect to the database.";
 }
 
-
-// Handle follow/unfollow actions (basic example)
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && !$isOwnProfile) {
-    $loggedInUser = $userDAO->getUserByUsername($loggedInUsername); // Re-fetch or ensure $loggedInUser is available
+    $loggedInUser = $userDAO->getUserByUsername($loggedInUsername);
     if ($loggedInUser) {
         $loggedInUserId = $loggedInUser->getUserId();
         $profileUserId = $user->getUserId();
 
         if ($_POST['action'] == 'follow') {
             $userDAO->followUser($loggedInUserId, $profileUserId);
-            $isFollowing = true; // Update status
+            $isFollowing = true;
         } elseif ($_POST['action'] == 'unfollow') {
             $userDAO->unfollowUser($loggedInUserId, $profileUserId);
-            $isFollowing = false; // Update status
+            $isFollowing = false;
         }
-        // Refresh counts after follow/unfollow
         $followerCount = $userDAO->getFollowerCount($profileUserId);
-        // No need to redirect for this simple example, page will refresh with updated state
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
         .profile-header { background-color: #1da1f2; padding: 20px; color: white; border-top-left-radius: 8px; border-top-right-radius: 8px; }
         .profile-header h1 { margin: 0; font-size: 24px; }
         .profile-header .username-handle { font-size: 16px; opacity: 0.8; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid white; margin-top: -50px; margin-left: 20px; background-color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff; } /* Simple placeholder */
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid white; margin-top: -50px; margin-left: 20px; background-color: #ccc; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff; }
         .profile-info { padding: 20px; }
         .profile-info .display-name { font-size: 20px; font-weight: bold; }
         .profile-info .bio { margin-top: 10px; color: #657786; }
@@ -93,17 +87,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
         .follow-button { background-color: #1da1f2; color: white; border: none; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
         .follow-button.following { background-color: #fff; color: #1da1f2; border: 1px solid #1da1f2; }
         .edit-profile-button { background-color: #fff; color: #1da1f2; border: 1px solid #1da1f2; padding: 10px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; text-decoration: none; }
+        .post { cursor: pointer; }
+        /* Modal styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.4);}
+        .modal-content { background: #fff; margin: 5% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; position: relative;}
+        .close { position: absolute; right: 15px; top: 10px; font-size: 28px; font-weight: bold; color: #aaa; cursor: pointer;}
+        .close:hover { color: #000; }
+        .like-btn { background: none; border: none; color: #e0245e; font-size: 1.2em; cursor: pointer; }
+        .like-btn.liked { color: #e0245e; font-weight: bold; }
+        .comments-section { margin-top: 20px; }
+        .comment { border-bottom: 1px solid #eee; padding: 5px 0; }
+        .comment-form textarea { width: 100%; border-radius: 5px; border: 1px solid #ccc; padding: 5px; }
+        .comment-form button { margin-top: 5px; background: #1da1f2; color: #fff; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
-
     <div class="container">
         <?php if ($profile_error): ?>
             <p class="error-message"><?php echo htmlspecialchars($profile_error); ?></p>
         <?php elseif ($user): ?>
-            <div class="profile-header">
-                <!-- Basic Cover Photo Area -->
-            </div>
+            <div class="profile-header"></div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 20px;">
                 <div class="profile-avatar">
                     <?php echo strtoupper(substr(htmlspecialchars($user->getUsername()), 0, 1)); ?>
@@ -120,52 +123,123 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
                             <?php endif; ?>
                         </form>
                     <?php else: ?>
-                        <!-- Link to an edit profile page (not implemented here) -->
                         <a href="edit_profile.php" class="edit-profile-button">Edit Profile</a>
                     <?php endif; ?>
                 </div>
             </div>
-
             <div class="profile-info">
                 <div class="display-name"><?php echo htmlspecialchars($user->getUsername()); ?></div>
-                <!-- <div class="username-handle">@<?php echo htmlspecialchars($user->getUsername()); ?></div> -->
                 <p class="bio"><?php echo htmlspecialchars($user->getBio() ?: 'No bio yet.'); ?></p>
                 <p style="font-size: 0.9em; color: #657786;">Joined: <?php echo date("M Y", strtotime($user->getCreatedAt())); ?></p>
             </div>
-
             <div class="profile-stats">
                 <div><span><?php echo $followingCount; ?></span> Following</div>
                 <div><span><?php echo $followerCount; ?></span> Followers</div>
             </div>
-
-            <!-- Placeholder for Tweets/Posts -->
-<div style="padding: 20px; border-top: 1px solid #e1e8ed;">
-    <h3>Posts</h3>
-    <?php if (empty($posts)): ?>
-        <p style="text-align:center; color: #657786;">No posts yet.</p>
-    <?php else: ?>
-        <?php foreach ($posts as $post): ?>
-            <div class="post" style="margin-bottom: 20px; padding: 15px; border: 1px solid #e1e8ed; border-radius: 5px;">
-                <?php if ($post->getContentURL()): ?>
-                    <img src="<?php echo htmlspecialchars($post->getContentURL()); ?>" 
-                         style="max-width: 100%; border-radius: 5px; margin-bottom: 10px;" 
-                         alt="Post image">
+            <!-- Posts Section -->
+            <div style="padding: 20px; border-top: 1px solid #e1e8ed;">
+                <h3>Posts</h3>
+                <?php if (empty($posts)): ?>
+                    <p style="text-align:center; color: #657786;">No posts yet.</p>
+                <?php else: ?>
+                    <?php foreach ($posts as $post): ?>
+                        <div class="post" data-post-id="<?php echo $post->getPostId(); ?>" style="margin-bottom: 20px; padding: 15px; border: 1px solid #e1e8ed; border-radius: 5px;">
+                            <?php if ($post->getContentURL()): ?>
+                                <img src="<?php echo htmlspecialchars($post->getContentURL()); ?>"
+                                     style="max-width: 100%; border-radius: 5px; margin-bottom: 10px;"
+                                     alt="Post image">
+                            <?php endif; ?>
+                            <p><?php echo htmlspecialchars($post->getCaption()); ?></p>
+                            <div style="color: #657786; font-size: 0.9em; margin-top: 10px;">
+                                <?php echo date("F j, Y, g:i a", strtotime($post->getCreatedAt())); ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php endif; ?>
-                
-                <p><?php echo htmlspecialchars($post->getCaption()); ?></p>
-                
-                <div style="color: #657786; font-size: 0.9em; margin-top: 10px;">
-                    <?php echo date("F j, Y, g:i a", strtotime($post->getCreatedAt())); ?>
+            </div>
+            <!-- Modal for Post Details -->
+            <div id="postModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" id="closeModal">&times;</span>
+                    <div id="modalBody">
+                        <!-- Post details will be loaded here via JS -->
+                    </div>
                 </div>
             </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
-</div>
-
         <?php else: ?>
             <p class="error-message">User profile could not be loaded.</p>
         <?php endif; ?>
     </div>
+    <script>
+        // Modal logic
+        const modal = document.getElementById('postModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalBody = document.getElementById('modalBody');
+        document.querySelectorAll('.post').forEach(postDiv => {
+            postDiv.addEventListener('click', function() {
+                const postId = this.getAttribute('data-post-id');
+                fetch('get_post_details.php?post_id=' + postId)
+                    .then(res => res.text())
+                    .then(html => {
+                        modalBody.innerHTML = html;
+                        modal.style.display = 'block';
+                        attachLikeHandler();
+                        attachCommentHandler();
+                    });
+            });
+        });
+        closeModal.onclick = function() { modal.style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == modal) modal.style.display = 'none'; }
 
+        // Like handler
+        function attachLikeHandler() {
+            const likeBtn = document.getElementById('likeBtn');
+            if (likeBtn) {
+                likeBtn.onclick = function(e) {
+                    e.preventDefault();
+                    const postId = this.getAttribute('data-post-id');
+                    fetch('like_post.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'post_id=' + postId
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            likeBtn.classList.toggle('liked', data.liked);
+                            document.getElementById('likeCount').textContent = data.like_count;
+                        }
+                    });
+                }
+            }
+        }
+        // Comment handler
+        function attachCommentHandler() {
+            const commentForm = document.getElementById('commentForm');
+            if (commentForm) {
+                commentForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    const postId = this.querySelector('input[name="post_id"]').value;
+                    const commentText = this.querySelector('textarea[name="comment"]').value;
+                    fetch('comment_post.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                        body: 'post_id=' + postId + '&comment=' + encodeURIComponent(commentText)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            const commentsList = document.getElementById('commentsList');
+                            const newComment = document.createElement('div');
+                            newComment.className = 'comment';
+                            newComment.textContent = data.comment_text;
+                            commentsList.appendChild(newComment);
+                            commentForm.reset();
+                        }
+                    });
+                }
+            }
+        }
+    </script>
 </body>
 </html>

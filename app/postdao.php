@@ -15,6 +15,8 @@ class postdao {
         "SELECT * FROM Posts WHERE UserID = ? ORDER BY CreatedAt DESC";
     private static $SELECT_ALL_POSTS = 
         "SELECT * FROM Posts ORDER BY CreatedAt DESC LIMIT ?, ?";
+    private static $SELECT_ALL_POSTS_WITH_USER = 
+        "SELECT p.*, u.Username FROM Posts p JOIN Users u ON p.UserID = u.UserID ORDER BY p.CreatedAt DESC";
     private static $SELECT_FEED_POSTS = 
         "SELECT p.*, u.Username FROM Posts p 
          JOIN Users u ON p.UserID = u.UserID 
@@ -119,22 +121,22 @@ class postdao {
         return $posts;
     }
 
-    public function getAllPosts($offset, $limit) {
+    // NEW: Get all posts with usernames for the feed
+    public function getAllPosts() {
         $posts = [];
-        
         try {
-            $stmt = $this->conn->prepare(self::$SELECT_ALL_POSTS);
-            $stmt->bindValue(1, $offset, PDO::PARAM_INT);
-            $stmt->bindValue(2, $limit, PDO::PARAM_INT);
+            $stmt = $this->conn->prepare(self::$SELECT_ALL_POSTS_WITH_USER);
             $stmt->execute();
-            
             while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $posts[] = $this->extractPostFromRow($row);
+                $post = $this->extractPostFromRow($row);
+                if (isset($row['Username'])) {
+                    $post->setUsername($row['Username']);
+                }
+                $posts[] = $post;
             }
         } catch (PDOException $e) {
             error_log("Error getting all posts: " . $e->getMessage());
         }
-        
         return $posts;
     }
 
