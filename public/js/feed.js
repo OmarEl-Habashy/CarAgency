@@ -74,8 +74,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Add event listeners to all like buttons
     document.querySelectorAll('.like-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            fetch('../app/controller/like_post.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'post_id=' + postId
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const likeCount = this.querySelector('.like-count');
+                    if (data.liked) {
+                        this.classList.add('liked');
+                    } else {
+                        this.classList.remove('liked');
+                    }
+                    likeCount.textContent = data.like_count;
+                }
+            })
+            .catch(error => {
+                console.error('Error liking post:', error);
+            });
         });
     });
     
@@ -137,6 +159,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 commentsModal.style.display = 'none';
             }
         }
+    }
+    
+    // Add media file preview functionality
+    const mediaInput = document.getElementById('media-file');
+    const mediaPreview = document.getElementById('media-preview');
+    
+    if (mediaInput && mediaPreview) {
+        mediaInput.addEventListener('change', function() {
+            // Clear previous preview
+            mediaPreview.innerHTML = '';
+            
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const fileReader = new FileReader();
+                
+                fileReader.onload = function(e) {
+                    // Check if file is an image
+                    if (file.type.match('image.*')) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'media-preview-image';
+                        mediaPreview.appendChild(img);
+                    } 
+                    // Check if file is a video
+                    else if (file.type.match('video.*')) {
+                        const video = document.createElement('video');
+                        video.src = e.target.result;
+                        video.className = 'media-preview-video';
+                        video.controls = true;
+                        mediaPreview.appendChild(video);
+                    }
+                    
+                    // Add remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'Remove';
+                    removeBtn.className = 'media-remove-btn';
+                    removeBtn.onclick = function(e) {
+                        e.preventDefault();
+                        mediaInput.value = '';
+                        mediaPreview.innerHTML = '';
+                    };
+                    mediaPreview.appendChild(removeBtn);
+                };
+                
+                fileReader.readAsDataURL(file);
+            }
+        });
     }
 });
 

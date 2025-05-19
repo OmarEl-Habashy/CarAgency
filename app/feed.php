@@ -2,7 +2,8 @@
 require_once '../database/database.php';
 require_once 'model/user.php';
 require_once 'DAO/userdao.php';
-require_once 'DAO/postdao.php';
+require_once 'controller/PostController.php';
+require_once 'components/feed.php';
 session_start();
 $message = "";
 if (isset($_GET['success']) && $_GET['success'] == 'post_created') {
@@ -21,6 +22,15 @@ if (isset($_GET['success']) && $_GET['success'] == 'post_created') {
         case 'post_failed':
             $message = "Error: Failed to create post.";
             break;
+        case 'invalid_file_type':
+            $message = "Error: Only images and videos are allowed.";
+            break;
+        case 'file_too_large':
+            $message = "Error: File size exceeds the limit (10MB).";
+            break;
+        case 'upload_failed':
+            $message = "Error: Failed to upload media. Please try again.";
+            break;
     }
 }
 if (!isset($_SESSION['username'])) {
@@ -28,138 +38,80 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-
 $username = $_SESSION['username'];
 
 $db = new Database();
 $conn = $db->connect();
-$postDAO = new Postdao($conn);
+$postController = new PostController($conn);
 $userDAO = new Userdao($conn);
 
 $userObj = $userDAO->getUserByUsername($username);
 $userId = $userObj ? $userObj->getUserId() : 0;
-$posts = $postDAO->getFollowingPosts($userId);
-
+$posts = $postController->getFollowingPosts($userId);
+$followingCount = $userDAO->getFollowingCount($userId);
+$followerCount = $userDAO->getFollowerCount($userId);
+$bio = $userObj ? $userObj->getBio() : '';
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Feed</title>
-<head>
-    <title>Feed</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/Project/public/css/feed.css">
-    <link rel="stylesheet" href="/Project/public/css/navbar.css">
-    <!-- Load the components.js file -->
-    <script src="../public/js/components.js"></script>
     <script defer src="../public/js/feed.js"></script>
 </head>
-</head>
 <body>
-    <div class="page-container">
-        <!-- Navbar will be loaded here -->
-        <div data-component="navbar" class="navbar-container"></div>
-        
-        <div class="main-content">
-            <div class="topbar">
-                <div class="topbar-title">Feed</div>
-            </div>
-            
-            <div class="feed-container">
-                                <!-- Add create post form at the top of the feed -->
-                <div class="create-post">
-                    <div class="post-user-avatar">
-                        <?php echo strtoupper(substr($username, 0, 1)); ?>
-                    </div>
-                    <div class="post-form-container">
-                        <form action="../app/controller/create_post_controller.php" method="post">
-                            <textarea name="caption" placeholder="What's happening?" rows="3" required></textarea>
-                            <div class="post-form-actions">
-                                <button type="submit" class="post-btn">Post</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                
-                <?php if (empty($posts)): ?>
-                    <div style="color:#2563eb;text-align:center;font-size:1.1rem;margin-top:40px;">No posts yet. Be the first to post!</div>
-                <?php else: ?>
-                    <?php foreach ($posts as $post): ?>
-                        <?php
-                            $postId = $post->getPostId();
-                            $liked = $postDAO->hasUserLikedPost($postId, $userId);
-                            $likeCount = $postDAO->getLikeCountByPostId($postId);
-                        ?>
-                        <div class="post" id="post-<?php echo $postId; ?>">
-                            <!-- Post header with user info -->
-                            <div class="post-header">
-                                <div class="post-user-avatar">
-                                    <?php
-                                        $postUsername = method_exists($post, 'getUsername') ? $post->getUsername() : (isset($post['username']) ? $post['username'] : '');
-                                        echo strtoupper(substr($postUsername, 0, 1));
-                                    ?>
-                                </div>
-                                <div class="post-username"><?php echo htmlspecialchars($postUsername); ?></div>
-                                <div class="post-date">
-                                    <?php
-                                        $createdAt = method_exists($post, 'getCreatedAt') ? $post->getCreatedAt() : (isset($post['created_at']) ? $post['created_at'] : '');
-                                        echo date("M d, Y H:i", strtotime($createdAt));
-                                    ?>
-                                </div>
-                            </div>
-                            
-                            <!-- Delete button (only for user's own posts) -->
-                            <?php 
-                            $postUserId = method_exists($post, 'getUserId') ? $post->getUserId() : (isset($post['user_id']) ? $post['user_id'] : 0);
-                            if ($postUserId == $userId): 
-                            ?>
-                            <form action="../app/controller/delete_post_controller.php" method="post" class="delete-form">
-                                <input type="hidden" name="post_id" value="<?php echo $postId; ?>">
-                                <button type="submit" class="delete-post-btn" onclick="return confirm('Are you sure you want to delete this post?');">×</button>
-                            </form>
-                            <?php endif; ?>
-                            
-                            <!-- Post content -->
-                            <div class="post-content">
-                                <?php
-                                    $caption = method_exists($post, 'getCaption') ? $post->getCaption() : (isset($post['caption']) ? $post['caption'] : '');
-                                    echo nl2br(htmlspecialchars($caption));
-                                ?>
-                                
-                                <?php
-                                    $contentURL = method_exists($post, 'getContentURL') ? $post->getContentURL() : (isset($post['content_url']) ? $post['content_url'] : '');
-                                    if ($contentURL):
-                                ?>
-                                    <img class="post-image" src="<?php echo htmlspecialchars($contentURL); ?>" alt="Post image">
-                                <?php endif; ?>
-                            </div>
-                            
-                            <!-- Post actions -->
-                            <div class="post-actions">
-                                <button class="like-btn<?php echo $liked ? ' liked' : ''; ?>" data-post-id="<?php echo $postId; ?>">
-                                    <span class="like-icon">👍</span>
-                                    <span class="like-count" id="like-count-<?php echo $postId; ?>"><?php echo $likeCount; ?></span>
-                                </button>
-                                <button class="comments-btn" onclick="openCommentsModal(<?php echo $postId; ?>)">
-                                    <span class="comment-icon">💬</span> Comments
-                                </button>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
+<div class="main-container">
+    <div class="profile-container">
+        <div class="profile-pic"><?php echo strtolower(substr($username, 0, 1)); ?></div>
+        <div class="profile-name"><?php echo $username; ?></div>
+        <div class="profile-handle">@<?php echo strtolower($username); ?></div>
+        <div class="profile-bio"><?php echo $bio; ?></div>
+        <div class="profile-stats">
+            <div><span><?php echo $followingCount; ?></span> Following</div>
+            <div><span><?php echo $followerCount; ?></span> Followers</div>
         </div>
+        <button onclick="location.href='profile.php'">Profile</button>
+        <button onclick="location.href='logout.php'">Logout</button>
     </div>
 
-    <div data-component="footer"></div>
+    <div class="main-content">
+        <div class="search-bar-container">
+            <form action="search.php" method="get">
+                <input type="text" name="query" placeholder="Search users..." class="search-input">
+                <button type="submit" class="search-button">Search</button>
+            </form>
+        </div>
 
-    <div id="commentsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeModal">&times;</span>
-            <div id="commentsBody">
-                <!-- Comments will be loaded here -->
-            </div>
+<div class="create-post-container">
+    <form action="../app/controller/create_post_controller.php" method="post" enctype="multipart/form-data">
+        <textarea name="caption" maxlength="280" placeholder="What's on your mind?" required></textarea>
+        <div class="media-upload">
+            <label for="media-file" class="media-label">
+                <span class="media-icon">📷</span>
+                <span>Add photo/video</span>
+            </label>
+            <input type="file" name="media" id="media-file" accept="image/*,video/*" style="display:none">
+            <div id="media-preview" class="media-preview"></div>
+        </div>
+        <button type="submit">Post</button>
+    </form>
+    <?php if (!empty($message)): ?>
+        <div class="post-message"><?php echo $message; ?></div>
+    <?php endif; ?>
+</div>
+
+        <?php renderFeed($posts, $postController, $userId); ?>
+    </div>
+</div>
+
+<div id="commentsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <div id="commentsBody">
+            <!-- Comments will be loaded here -->
         </div>
     </div>
+</div>
 </body>
 </html>

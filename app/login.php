@@ -1,7 +1,5 @@
 <?php
 session_start();
-
-// If user is already logged in, redirect to feed
 if (isset($_SESSION['username'])) {
     header("Location: feed.php");
     exit();
@@ -16,7 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
     
-    // Validate input
     if (empty($username) || empty($password)) {
         $login_error = "Please enter both username and password.";
     } else {
@@ -43,85 +40,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-<!-- <!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #1da1f2;
-        }
-        .error {
-            color: red;
-            margin-bottom: 15px;
-        }
-        form {
-            background-color: #f5f8fa;
-            padding: 20px;
-            border-radius: 5px;
-        }
-        input[type=text], input[type=password] {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        input[type=submit] {
-            width: 100%;
-            background-color: #1da1f2;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        input[type=submit]:hover {
-            background-color: #0c8ed9;
-        }
-        .register-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Login</h1>
-    
-    <?php if ($login_error): ?>
-        <div class="error"><?php echo htmlspecialchars($login_error); ?></div>
-    <?php endif; ?>
-    
-    <form action="login.php" method="post">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required>
-        </div>
-        
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        
-        <div>
-            <input type="submit" value="Login">
-        </div>
-    </form>
-    
-    <div class="register-link">
-        <p>Don't have an account? <a href="register.php">Register here</a></p>
-    </div>
-</body>
-</html> -->
 
 <!DOCTYPE html>
 <html lang="en">

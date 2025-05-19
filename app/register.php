@@ -1,9 +1,13 @@
 <?php
 
 session_start();
+if (isset($_SESSION['username'])) {
+    header("Location: feed.php");
+    exit();
+}
 require_once '../database/database.php';
 require_once 'DAO/userdao.php';
-require_once 'model/ser.php';
+require_once 'model/user.php';
 
 $registration_error = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -16,10 +20,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $userDAO = new userdao($conn);
         $bio = "This is a default bio."; 
 
-        // Create a User object first
         $user = new User(null, $username, $email, password_hash($password, PASSWORD_DEFAULT), $bio);
         
-        // Pass the User object to insertUser
         if ($userDAO->insertUser($user)) {
             $_SESSION['username'] = $username;
             header("Location: feed.php");
@@ -37,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
-   <link rel="stylesheet" href="/webprojectcs1/Pay-Per-View/public/css/login.css">
+   <link rel="stylesheet" href="../public/css/login.css">
 </head>
 <body>
 

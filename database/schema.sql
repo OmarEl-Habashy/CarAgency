@@ -142,3 +142,15 @@ VALUES (2, 1), -- Jane follows John
 -- # CREATE INDEX idx_verification_token ON VerificationTokens(Token);
 
 -- # DROP DATABASE ConPay;
+CREATE TABLE Notifications (
+    NotificationID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    SenderID INT NOT NULL,
+    NotificationType VARCHAR(50) NOT NULL,
+    ContentID INT DEFAULT NULL,
+    Message VARCHAR(255) NOT NULL,
+    IsRead BOOLEAN DEFAULT FALSE,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (SenderID) REFERENCES Users(UserID)
+);
