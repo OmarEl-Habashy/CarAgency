@@ -1,7 +1,7 @@
 <?php
 class database {
-    private $host = 'localhost'; // or '127.0.0.1'
-    private $port = '3306';      // Important: Using non-default port
+    private $host = 'localhost'; 
+    private $port = '3307';      
     private $db_name = 'conpay';
     private $username = 'root';
     private $password = '';

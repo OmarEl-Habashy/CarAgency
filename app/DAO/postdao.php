@@ -1,7 +1,7 @@
 <?php
-require_once 'database.php';
-require_once 'Post.php';
-require_once 'Comment.php';
+require_once __DIR__ . '/../../database/database.php'; // Use absolute path with __DIR__
+require_once __DIR__ . '/../model/Post.php';
+require_once __DIR__ . '/../model/Comment.php';
 
 class postdao {
     private $conn;
@@ -86,23 +86,35 @@ class postdao {
         }
     }
 
-    public function getPostById($postId) {
-        try {
-            $stmt = $this->conn->prepare(self::$SELECT_POST_BY_ID);
-            $stmt->bindValue(1, $postId, PDO::PARAM_INT);
-            $stmt->execute();
-            
-            if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                return $this->extractPostFromRow($row);
-            }
-            
-            return null;
-        } catch (PDOException $e) {
-            error_log("Error getting post by ID: " . $e->getMessage());
-            return null;
+public function getPostById($postId) {
+    try {
+        $stmt = $this->conn->prepare("
+            SELECT p.*, u.Username 
+            FROM Posts p 
+            JOIN Users u ON p.UserID = u.UserID 
+            WHERE p.PostID = ?
+        ");
+        $stmt->bindParam(1, $postId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $post = new Post(
+                $row['PostID'],
+                $row['UserID'],
+                $row['ContentURL'],
+                $row['Caption'],
+                $row['CreatedAt']
+            );
+            // Important: Set the username here
+            $post->setUsername($row['Username']);
+            return $post;
         }
+        return null;
+    } catch (PDOException $e) {
+        error_log("Error getting post by ID: " . $e->getMessage());
+        return null;
     }
-
+}
     public function getPostsByUserId($userId) {
         $posts = [];
         
@@ -179,17 +191,26 @@ class postdao {
         }
     }
 
-    public function deletePost($postId) {
-        try {
-            $stmt = $this->conn->prepare(self::$DELETE_POST_SQL);
-            $stmt->bindValue(1, $postId, PDO::PARAM_INT);
-            
-            return $stmt->execute();
-        } catch (PDOException $e) {
-            error_log("Error deleting post: " . $e->getMessage());
-            return false;
-        }
+public function deletePost($postId) {
+    try {
+        $stmt = $this->conn->prepare("DELETE FROM Likes WHERE PostID = ?");
+        $stmt->bindParam(1, $postId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $stmt = $this->conn->prepare("DELETE FROM Comments WHERE PostID = ?");
+        $stmt->bindParam(1, $postId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        $stmt = $this->conn->prepare("DELETE FROM Posts WHERE PostID = ?");
+        $stmt->bindParam(1, $postId, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return true;
+    } catch (PDOException $e) {
+        error_log("Error deleting post: " . $e->getMessage());
+        return false;
     }
+}
 
     public function getPostCountByUserId($userId) {
         try {
@@ -224,7 +245,6 @@ class postdao {
         return $posts;
     }
 
-    // Helper method to extract a Post object from a result set row
     private function extractPostFromRow($row) {
         $post = new Post(
             $row['PostID'],
@@ -241,7 +261,6 @@ class postdao {
         return $post;
     }
 
-    // Method to insert a like into the Likes table
     public function insertLike($postId, $userId) {
         try {
             $stmt = $this->conn->prepare(self::$INSERT_LIKE_SQL);
@@ -250,7 +269,6 @@ class postdao {
             
             return $stmt->execute();
         } catch (PDOException $e) {
-            // Check for duplicate entry error (integrity constraint violation)
             if ($e->getCode() == '23000') {
                 error_log("User has already liked this post.");
             } else {
@@ -260,7 +278,6 @@ class postdao {
         }
     }
 
-    // Method to insert a comment into the Comments table
     public function insertComment($postId, $userId, $content) {
         try {
             $stmt = $this->conn->prepare(self::$INSERT_COMMENT_SQL);
@@ -275,7 +292,6 @@ class postdao {
         }
     }
 
-    // Method to get all comments for a post with username information
     public function getCommentsByPostId($postId) {
         $comments = [];
         
@@ -344,5 +360,42 @@ class postdao {
             return false;
         }
     }
+
+    public function getFollowingPosts($userId) {
+    $posts = [];
+    
+    try {
+        $stmt = $this->conn->prepare(self::$SELECT_FEED_POSTS);
+        $stmt->bindValue(1, $userId, PDO::PARAM_INT);  
+        $stmt->bindValue(2, $userId, PDO::PARAM_INT);  
+        $stmt->bindValue(3, 0, PDO::PARAM_INT);        
+        $stmt->bindValue(4, 100, PDO::PARAM_INT);      
+        $stmt->execute();
+        
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $post = $this->extractPostFromRow($row);
+            if (isset($row['Username'])) {
+                $post->setUsername($row['Username']);
+            }
+            $posts[] = $post;
+        }
+    } catch (PDOException $e) {
+        error_log("Error getting following posts: " . $e->getMessage());
+    }
+    
+    return $posts;
+}
+public function getCommentCountByPostId($postId) {
+    try {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM Comments WHERE PostID = ?");
+        $stmt->bindParam(1, $postId, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchColumn();
+    } catch (PDOException $e) {
+        error_log("Error getting comment count: " . $e->getMessage());
+        return 0;
+    }
+}
+
 }
 ?>

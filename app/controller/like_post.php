@@ -1,9 +1,9 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-require_once 'database.php';
-require_once 'postdao.php';
-require_once 'userdao.php';
+require_once  '../../database/database.php';
+require_once  '../DAO/postdao.php';
+require_once '../DAO/userdao.php';
 
 if (!isset($_SESSION['username']) || !isset($_POST['post_id'])) {
     echo json_encode(['success' => false]);

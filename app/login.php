@@ -7,8 +7,8 @@ if (isset($_SESSION['username'])) {
     exit();
 }
 
-require_once 'database.php';
-require_once 'userdao.php';
+require_once '../database/database.php';
+require_once 'DAO/userdao.php';
 
 $login_error = null;
 
@@ -26,15 +26,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($conn) {
             $userDAO = new UserDAO($conn);
             
-            // Attempt to login (userDAO should verify the password)
             $user = $userDAO->loginUser($username, $password);
             
             if ($user) {
-                // Login successful
                 $_SESSION['username'] = $username;
-                // You might want to store more user information in session
                 // $_SESSION['user_id'] = $user->getUserId();
-                
                 header("Location: feed.php");
                 exit();
             } else {

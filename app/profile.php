@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'database.php';
-require_once 'userdao.php';
-require_once 'user.php';
-require_once 'postdao.php';
+require_once '../database/database.php';
+require_once 'DAO/userdao.php';
+require_once 'model/user.php';
+require_once 'DAO/postdao.php';
 
 if (!isset($_SESSION['username'])) {
     header("Location: register.php");

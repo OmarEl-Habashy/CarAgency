@@ -1,9 +1,9 @@
 <?php
 
 session_start();
-require_once 'database.php';
-require_once 'userdao.php';
-require_once 'User.php';
+require_once '../database/database.php';
+require_once 'DAO/userdao.php';
+require_once 'model/ser.php';
 
 $registration_error = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

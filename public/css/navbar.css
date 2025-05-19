@@ -1,0 +1,207 @@
+/* filepath: d:\Program Files\xampp\htdocs\Project\public\css\navbar.css */
+/* Twitter-like navbar styles */
+.sidebar {
+    width: 275px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 12px;
+    border-right: 1px solid #eff3f4;
+    background-color: white;
+}
+
+/* Logo styling */
+.logo-container {
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.logo {
+    display: flex;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+
+.logo:hover {
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.app-logo {
+    width: 28px;
+    height: 28px;
+}
+
+/* Navigation items */
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 50px;
+    font-size: 20px;
+    font-weight: 400;
+    color: #0f1419;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    margin-bottom: 4px;
+}
+
+.nav-item:hover {
+    background-color: rgba(15, 20, 25, 0.1);
+}
+
+.nav-item.active {
+    font-weight: 700;
+}
+
+.nav-icon {
+    margin-right: 16px;
+    width: 24px;
+    height: 24px;
+}
+
+.nav-text {
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Post button */
+.post-btn {
+    background-color: #1DA1F2;
+    color: white;
+    font-weight: 700;
+    margin-top: 16px;
+    text-align: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.post-btn:hover {
+    background-color: #1a91da;
+}
+
+/* Profile section */
+.profile-section {
+    margin-top: auto;
+    margin-bottom: 12px;
+}
+
+.profile-header {
+    display: flex;
+    padding: 12px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.profile-header:hover {
+    background-color: rgba(15, 20, 25, 0.1);
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #1DA1F2;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-right: 12px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.username {
+    font-weight: 700;
+    color: #0f1419;
+}
+
+.user-handle {
+    color: #536471;
+    font-size: 14px;
+}
+
+.menu-dots {
+    width: 24px;
+    height: 24px;
+    align-self: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1280px) {
+    .nav-text {
+        display: none;
+    }
+    
+    .sidebar {
+        width: 88px;
+        align-items: center;
+    }
+    
+    .nav-item {
+        justify-content: center;
+    }
+    
+    .nav-icon {
+        margin-right: 0;
+    }
+    
+    .post-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .post-btn span {
+        display: none;
+    }
+    
+    .post-btn::after {
+        content: "+";
+        font-size: 24px;
+    }
+    
+    .profile-header {
+        padding: 8px;
+    }
+    
+    .user-info, .menu-dots {
+        display: none;
+    }
+}
+
+/* Add to page container styles */
+.page-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 16px;
+    border-right: 1px solid #eff3f4;
+}

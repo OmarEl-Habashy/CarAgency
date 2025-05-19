@@ -17,7 +17,6 @@ class Post {
         $this->username = null;
     }
 
-    // Getters
     public function getPostId() {
         return $this->postId;
     }
@@ -42,7 +41,6 @@ class Post {
         return $this->username;
     }
 
-    // Setters
     public function setPostId($postId) {
         $this->postId = $postId;
         return $this;
