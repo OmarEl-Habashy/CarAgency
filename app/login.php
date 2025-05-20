@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (isset($_SESSION['is_admin']) && $_SESSION['is_admin']) {
+    header("Location: admin_dashboard.php");
+    exit();
+}
 if (isset($_SESSION['username'])) {
     header("Location: feed.php");
     exit();
@@ -13,6 +17,20 @@ $login_error = null;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
+
+      $adminFile = __DIR__ . '/config/admin.txt';
+    if (file_exists($adminFile)) {
+        $adminCreds = file($adminFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        if (!empty($adminCreds)) {
+            list($adminUser, $adminPass) = explode(',', $adminCreds[0]);
+            if ($username === trim($adminUser) && $password === trim($adminPass)) {
+                $_SESSION['username'] = $username;
+                $_SESSION['is_admin'] = true;
+                header("Location: admin_dashboard.php");
+                exit();
+            }
+        }
+    }
     
     if (empty($username) || empty($password)) {
         $login_error = "Please enter both username and password.";

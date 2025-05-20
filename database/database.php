@@ -1,7 +1,7 @@
 <?php
 class database {
     private $host = 'localhost'; 
-    private $port = '3306';      
+    private $port = '3307';      
     private $db_name = 'conpay';
     private $username = 'root';
     private $password = '';
