@@ -1,3 +1,4 @@
+
 <?php
 require_once '../database/database.php';
 require_once 'model/user.php';
@@ -64,8 +65,16 @@ $bio = $userObj ? $userObj->getBio() : '';
 <div class="main-container">
     <div class="profile-container">
         <div class="profile-pic"><?php echo strtolower(substr($username, 0, 1)); ?></div>
-        <div class="profile-name"><?php echo $username; ?></div>
-        <div class="profile-handle">@<?php echo strtolower($username); ?></div>
+        <div class="profile-name">
+            <a href="profile.php?user=<?php echo urlencode($username); ?>" class="profile-link">
+                <?php echo $username; ?>
+            </a>
+        </div>
+        <div class="profile-handle">
+            <a href="profile.php?user=<?php echo urlencode($username); ?>" class="profile-link">
+                @<?php echo strtolower($username); ?>
+            </a>
+        </div>
         <div class="profile-bio"><?php echo $bio; ?></div>
         <div class="profile-stats">
             <div><span><?php echo $followingCount; ?></span> Following</div>
@@ -83,23 +92,23 @@ $bio = $userObj ? $userObj->getBio() : '';
             </form>
         </div>
 
-<div class="create-post-container">
-    <form action="../app/controller/create_post_controller.php" method="post" enctype="multipart/form-data">
-        <textarea name="caption" maxlength="280" placeholder="What's on your mind?" required></textarea>
-        <div class="media-upload">
-            <label for="media-file" class="media-label">
-                <span class="media-icon">📷</span>
-                <span>Add photo/video</span>
-            </label>
-            <input type="file" name="media" id="media-file" accept="image/*,video/*" style="display:none">
-            <div id="media-preview" class="media-preview"></div>
+        <div class="create-post-container">
+            <form action="../app/controller/create_post_controller.php" method="post" enctype="multipart/form-data">
+                <textarea name="caption" maxlength="280" placeholder="What's on your mind?" required></textarea>
+                <div class="media-upload">
+                    <label for="media-file" class="media-label">
+                        <span class="media-icon">📷</span>
+                        <span>Add photo/video</span>
+                    </label>
+                    <input type="file" name="media" id="media-file" accept="image/*,video/*" style="display:none">
+                    <div id="media-preview" class="media-preview"></div>
+                </div>
+                <button type="submit">Post</button>
+            </form>
+            <?php if (!empty($message)): ?>
+                <div class="post-message"><?php echo $message; ?></div>
+            <?php endif; ?>
         </div>
-        <button type="submit">Post</button>
-    </form>
-    <?php if (!empty($message)): ?>
-        <div class="post-message"><?php echo $message; ?></div>
-    <?php endif; ?>
-</div>
 
         <?php renderFeed($posts, $postController, $userId); ?>
     </div>

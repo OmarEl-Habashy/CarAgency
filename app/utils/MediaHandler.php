@@ -4,7 +4,7 @@ class MediaHandler {
     private $allowedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
     private $maxFileSize = 10485760; // 10MB
     private $uploadDir = '../../public/uploads/';
-    private $baseUrl = '/Project/public/uploads/';
+    private $baseUrl = '../public/uploads/';
     
     public function __construct() {
         // Create upload directory if it doesn't exist
