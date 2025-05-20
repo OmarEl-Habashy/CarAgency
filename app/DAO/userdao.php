@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../../database/database.php';
-require_once __DIR__ . '/../model/user.php';        
-class userdao {
+require_once __DIR__ . '/../model/user.php';
+
+class UserDAO {
     private $db;
 
     public function __construct($db) {
@@ -11,7 +12,7 @@ class userdao {
     // Create a new user
     public function insertUser(User $user) {
         try {
-            $sql = "INSERT INTO Users (Username, Email, PassW, Bio, CreatedAt) VALUES (?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO Users (Username, Email, PassW, Bio, CreatedAt, ProfilePicture) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt = $this->db->prepare($sql);
             
             $username = $user->getUsername();
@@ -19,12 +20,14 @@ class userdao {
             $password = $user->getHashedPassword();
             $bio = $user->getBio();
             $createdAt = $user->getCreatedAt();
+            $profilePicture = $user->getProfilePicture();
             
             $stmt->bindParam(1, $username);
             $stmt->bindParam(2, $email);
             $stmt->bindParam(3, $password);
             $stmt->bindParam(4, $bio);
             $stmt->bindParam(5, $createdAt);
+            $stmt->bindParam(6, $profilePicture);
             
             $stmt->execute();
             
@@ -32,9 +35,8 @@ class userdao {
             
             return true;
         } catch (PDOException $e) {
-            // Log error
             error_log("Error inserting user: " . $e->getMessage());
-            return false;
+            throw new Exception("Failed to create user: " . $e->getMessage());
         }
     }
 
@@ -43,7 +45,7 @@ class userdao {
         try {
             $sql = "SELECT * FROM Users WHERE UserID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(1, $userId, PDO::PARAM_INT);
             $stmt->execute();
             
             if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -53,7 +55,7 @@ class userdao {
             return null;
         } catch (PDOException $e) {
             error_log("Error selecting user: " . $e->getMessage());
-            return null;
+            throw new Exception("Failed to retrieve user: " . $e->getMessage());
         }
     }
 
@@ -72,32 +74,50 @@ class userdao {
             return $users;
         } catch (PDOException $e) {
             error_log("Error selecting all users: " . $e->getMessage());
-            return [];
+            throw new Exception("Failed to retrieve users: " . $e->getMessage());
         }
     }
 
     // Update a user
     public function updateUser(User $user) {
         try {
-            $sql = "UPDATE Users SET Username = ?, Email = ?, PassW = ?, Bio = ? WHERE UserID = ?";
+            $sql = "UPDATE Users SET Username = ?, Email = ?, PassW = ?, Bio = ?, ProfilePicture = ? WHERE UserID = ?";
             $stmt = $this->db->prepare($sql);
             
             $username = $user->getUsername();
             $email = $user->getEmail();
             $password = $user->getHashedPassword();
             $bio = $user->getBio();
+            $profilePicture = $user->getProfilePicture();
             $userId = $user->getUserId();
             
             $stmt->bindParam(1, $username);
             $stmt->bindParam(2, $email);
             $stmt->bindParam(3, $password);
             $stmt->bindParam(4, $bio);
-            $stmt->bindParam(5, $userId);
+            $stmt->bindParam(5, $profilePicture);
+            $stmt->bindParam(6, $userId, PDO::PARAM_INT);
             
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error updating user: " . $e->getMessage());
-            return false;
+            throw new Exception("Failed to update user: " . $e->getMessage());
+        }
+    }
+
+    // Update profile (bio and profile picture)
+    public function updateProfile($userId, $bio, $profilePicture) {
+        try {
+            $sql = "UPDATE Users SET Bio = ?, ProfilePicture = ? WHERE UserID = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(1, $bio);
+            $stmt->bindParam(2, $profilePicture);
+            $stmt->bindParam(3, $userId, PDO::PARAM_INT);
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error updating profile: " . $e->getMessage());
+            throw new Exception("Failed to update profile: " . $e->getMessage());
         }
     }
 
@@ -106,12 +126,12 @@ class userdao {
         try {
             $sql = "DELETE FROM Users WHERE UserID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(1, $userId, PDO::PARAM_INT);
             
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error deleting user: " . $e->getMessage());
-            return false;
+            throw new Exception("Failed to delete user: " . $e->getMessage());
         }
     }
 
@@ -130,7 +150,7 @@ class userdao {
             return null;
         } catch (PDOException $e) {
             error_log("Error getting user by username: " . $e->getMessage());
-            return null;
+            throw new Exception("Failed to retrieve user by username: " . $e->getMessage());
         }
     }
 
@@ -149,7 +169,7 @@ class userdao {
             return null;
         } catch (PDOException $e) {
             error_log("Error getting user by email: " . $e->getMessage());
-            return null;
+            throw new Exception("Failed to retrieve user by email: " . $e->getMessage());
         }
     }
 
@@ -170,7 +190,7 @@ class userdao {
             return null;
         } catch (PDOException $e) {
             error_log("Error logging in user: " . $e->getMessage());
-            return null;
+            throw new Exception("Failed to login user: " . $e->getMessage());
         }
     }
 
@@ -182,7 +202,8 @@ class userdao {
             $row['Email'],
             $row['PassW'],
             $row['Bio'] ?? null,
-            $row['CreatedAt']
+            $row['CreatedAt'],
+            $row['ProfilePicture'] ?? null
         );
     }
 
@@ -191,13 +212,13 @@ class userdao {
         try {
             $sql = "SELECT COUNT(*) FROM Follows WHERE FolloweeID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(1, $userId, PDO::PARAM_INT);
             $stmt->execute();
             
             return (int)$stmt->fetchColumn();
         } catch (PDOException $e) {
             error_log("Error getting follower count: " . $e->getMessage());
-            return 0;
+            throw new Exception("Failed to get follower count: " . $e->getMessage());
         }
     }
 
@@ -206,13 +227,13 @@ class userdao {
         try {
             $sql = "SELECT COUNT(*) FROM Follows WHERE FollowerID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(1, $userId, PDO::PARAM_INT);
             $stmt->execute();
             
             return (int)$stmt->fetchColumn();
         } catch (PDOException $e) {
             error_log("Error getting following count: " . $e->getMessage());
-            return 0;
+            throw new Exception("Failed to get following count: " . $e->getMessage());
         }
     }
 
@@ -221,14 +242,14 @@ class userdao {
         try {
             $sql = "SELECT COUNT(*) FROM Follows WHERE FollowerID = ? AND FolloweeID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $followerId);
-            $stmt->bindParam(2, $followeeId);
+            $stmt->bindParam(1, $followerId, PDO::PARAM_INT);
+            $stmt->bindParam(2, $followeeId, PDO::PARAM_INT);
             $stmt->execute();
             
             return (int)$stmt->fetchColumn() > 0;
         } catch (PDOException $e) {
             error_log("Error checking following status: " . $e->getMessage());
-            return false;
+            throw new Exception("Failed to check following status: " . $e->getMessage());
         }
     }
 
@@ -245,13 +266,13 @@ class userdao {
         try {
             $sql = "INSERT INTO Follows (FollowerID, FolloweeID) VALUES (?, ?)";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $followerId);
-            $stmt->bindParam(2, $followeeId);
+            $stmt->bindParam(1, $followerId, PDO::PARAM_INT);
+            $stmt->bindParam(2, $followeeId, PDO::PARAM_INT);
             
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error following user: " . $e->getMessage());
-            return false;
+            throw new Exception("Failed to follow user: " . $e->getMessage());
         }
     }
 
@@ -260,13 +281,13 @@ class userdao {
         try {
             $sql = "DELETE FROM Follows WHERE FollowerID = ? AND FolloweeID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $followerId);
-            $stmt->bindParam(2, $followeeId);
+            $stmt->bindParam(1, $followerId, PDO::PARAM_INT);
+            $stmt->bindParam(2, $followeeId, PDO::PARAM_INT);
             
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Error unfollowing user: " . $e->getMessage());
-            return false;
+            throw new Exception("Failed to unfollow user: " . $e->getMessage());
         }
     }
 
@@ -275,7 +296,7 @@ class userdao {
         try {
             $sql = "SELECT u.* FROM Users u JOIN Follows f ON u.UserID = f.FollowerID WHERE f.FolloweeID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(1, $userId, PDO::PARAM_INT);
             $stmt->execute();
             
             $followers = [];
@@ -286,7 +307,7 @@ class userdao {
             return $followers;
         } catch (PDOException $e) {
             error_log("Error getting followers: " . $e->getMessage());
-            return [];
+            throw new Exception("Failed to get followers: " . $e->getMessage());
         }
     }
 
@@ -295,7 +316,7 @@ class userdao {
         try {
             $sql = "SELECT u.* FROM Users u JOIN Follows f ON u.UserID = f.FolloweeID WHERE f.FollowerID = ?";
             $stmt = $this->db->prepare($sql);
-            $stmt->bindParam(1, $userId);
+            $stmt->bindParam(1, $userId, PDO::PARAM_INT);
             $stmt->execute();
             
             $following = [];
@@ -306,7 +327,7 @@ class userdao {
             return $following;
         } catch (PDOException $e) {
             error_log("Error getting following: " . $e->getMessage());
-            return [];
+            throw new Exception("Failed to get following: " . $e->getMessage());
         }
     }
 }

@@ -47,9 +47,7 @@ if ($searchQuery !== '') {
     <title>Search</title>
     <link rel="stylesheet" href="../public/css/login.css">
     <style>
-        html, body {
-            height: 100%;
-        }
+        html, body { height: 100%; }
         body {
             min-height: 100vh;
             height: 100%;
@@ -174,6 +172,14 @@ if ($searchQuery !== '') {
             max-height: 220px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.07);
         }
+        .post-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .post-link:visited {
+            color: inherit;
+        }
         @media (max-width: 700px) {
             .search-content { max-width: 100%; }
         }
@@ -276,11 +282,12 @@ if ($searchQuery !== '') {
                 <div class="search-title">Post Results</div>
                 <?php if (count($postResults) > 0): ?>
                     <?php foreach ($postResults as $post): ?>
+                        <a href="profile.php?username=<?php echo urlencode($userDAO->selectUser($post['UserID'])->getUsername()); ?>&post_id=<?php echo urlencode($post['PostID']); ?>" class="post-link">
                         <div class="post-result">
                             <div class="caption"><?php echo htmlspecialchars($post['Caption']); ?></div>
                             <div class="post-meta">
                                 <span>By 
-                                    <a href="profile.php?username=<?php echo urlencode($userDAO->selectUser($post['UserID'])->getUsername()); ?>" style="color:#3f51b5;">
+                                    <a href="profile.php?username=<?php echo urlencode($userDAO->selectUser($post['UserID'])->getUsername()); ?>" style="color:#3f51b5;" onclick="event.stopPropagation();">
                                         <?php echo htmlspecialchars($userDAO->selectUser($post['UserID'])->getUsername()); ?>
                                     </a>
                                 </span>
@@ -303,6 +310,7 @@ if ($searchQuery !== '') {
                                 <?php endif; ?>
                             <?php endif; ?>
                         </div>
+                        </a>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <div class="no-results">No posts found.</div>
