@@ -99,6 +99,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
         .comment { border-bottom: 1px solid #eee; padding: 5px 0; }
         .comment-form textarea { width: 100%; border-radius: 5px; border: 1px solid #ccc; padding: 5px; }
         .comment-form button { margin-top: 5px; background: #1da1f2; color: #fff; border: none; border-radius: 5px; padding: 5px 10px; cursor: pointer; }
+        .profile-stats a { text-decoration: none; color: #14171a; }
+        .profile-stats a:hover { color: #1da1f2; }
     </style>
 </head>
 <body>
@@ -133,8 +135,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
                 <p style="font-size: 0.9em; color: #657786;">Joined: <?php echo date("M Y", strtotime($user->getCreatedAt())); ?></p>
             </div>
             <div class="profile-stats">
-                <div><span><?php echo $followingCount; ?></span> Following</div>
-                <div><span><?php echo $followerCount; ?></span> Followers</div>
+                <div><a href="view/following.php?username=<?php echo htmlspecialchars($user->getUsername()); ?>"><span><?php echo $followingCount; ?></span> Following</a></div>
+                <div><a href="view/followers.php?username=<?php echo htmlspecialchars($user->getUsername()); ?>"><span><?php echo $followerCount; ?></span> Followers</a></div>
             </div>
             <!-- Posts Section -->
             <div style="padding: 20px; border-top: 1px solid #e1e8ed;">

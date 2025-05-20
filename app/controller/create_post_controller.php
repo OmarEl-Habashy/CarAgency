@@ -4,7 +4,7 @@ require_once '../../database/database.php';
 require_once '../DAO/postdao.php';
 require_once '../DAO/userdao.php';
 require_once '../model/Post.php';
-require_once '../utils/MediaHandler.php'; // We'll create this utility
+require_once '../utils/MediaHandler.php'; 
 
 if (!isset($_SESSION['username']) || !isset($_POST['caption'])) {
     header("Location: ../feed.php?error=missing_data");
