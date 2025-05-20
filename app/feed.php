@@ -245,6 +245,77 @@ if ($postId > 0) {
         </div>
     </div>
 </div>
+
+<script src="../public/js/send_email.js"></script>
+
+<!-- Then run our email checking code -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Feed page loaded, checking for pending registration...');
+    
+    // Check for sendWelcomeEmail function to make sure it's loaded
+    if (typeof sendWelcomeEmail !== 'function') {
+        console.error('sendWelcomeEmail function is not defined! Script may not be loaded correctly.');
+    }
+    
+    function checkPendingRegistration() {
+        // Check localStorage for registration data
+        const registrationData = localStorage.getItem('pendingRegistration');
+        console.log('Found registration data:', registrationData);
+        
+        if (registrationData) {
+            try {
+                const data = JSON.parse(registrationData);
+                console.log('Processing registration data:', data);
+                
+                // Make sure the function exists before calling it
+                if (typeof sendWelcomeEmail === 'function') {
+                    console.log('Recent registration detected, sending welcome email to:', data.email);
+                    
+                    // Send welcome email
+                    sendWelcomeEmail(data.username, data.email);
+                    
+                    // Show a small notification to the user
+                    showEmailNotification(data.email);
+                } else {
+                    console.error('Cannot send email: sendWelcomeEmail function is not available');
+                }
+                
+                // Clear the registration data
+                localStorage.removeItem('pendingRegistration');
+                console.log('Registration data cleared');
+                
+            } catch (e) {
+                console.error('Error processing registration data:', e);
+                localStorage.removeItem('pendingRegistration');
+            }
+        } else {
+            console.log('No pending registration found');
+        }
+    }
+    
+    // Function to show a small notification
+    function showEmailNotification(email) {
+        // Create notification element
+        const notificationDiv = document.createElement('div');
+        notificationDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background-color: #4CAF50; color: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 1000; max-width: 300px;';
+        notificationDiv.innerHTML = `<p><strong>Welcome!</strong></p><p>A welcome email has been sent to ${email}</p>`;
+        
+        // Add notification to page
+        document.body.appendChild(notificationDiv);
+        
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+            notificationDiv.style.opacity = '0';
+            notificationDiv.style.transition = 'opacity 0.5s';
+            setTimeout(() => document.body.removeChild(notificationDiv), 500);
+        }, 5000);
+    }
+    
+    // Delayed check to ensure scripts are loaded
+    setTimeout(checkPendingRegistration, 1000);
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Hamburger menu logic

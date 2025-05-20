@@ -330,5 +330,23 @@ class UserDAO {
             throw new Exception("Failed to get following: " . $e->getMessage());
         }
     }
+    
+    public function getUserEmail($username) {
+        try {
+            $sql = "SELECT Email FROM Users WHERE Username = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(1, $username);
+            $stmt->execute();
+            
+            if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                return $row['Email'];
+            }
+            
+            return false;
+        } catch (PDOException $e) {
+            error_log("Error getting user email: " . $e->getMessage());
+            return false;
+        }
+    }
 }
 ?>

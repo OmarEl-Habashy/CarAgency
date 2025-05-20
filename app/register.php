@@ -39,8 +39,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
-   <link rel="stylesheet" href="../public/css/login.css">
-</head>
+    <link rel="stylesheet" href="../public/css/login.css">
+    <script src="../public/js/send_email.js"></script></head>
 <body>
 
 <div class="theme-toggle">
@@ -84,6 +84,91 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.querySelector('form');
+    console.log('Registration script loaded');
+    
+    // When form is submitted, save data before the redirect happens
+    registerForm.addEventListener('submit', function(e) {
+        console.log('Form submission detected');
+        
+        // Get form values
+        const usernameEl = document.getElementById('username');
+        const emailEl = document.getElementById('email');
+        
+        if (!usernameEl || !emailEl) {
+            console.error('Form fields not found:', {
+                username: usernameEl,
+                email: emailEl
+            });
+            return; // Let form submit normally
+        }
+        
+        const username = usernameEl.value;
+        const email = emailEl.value;
+        
+        if (!username || !email) {
+            console.warn('Username or email is empty, not saving data');
+            return; // Let form submit normally
+        }
+        
+        console.log('Saving registration data:', { username, email });
+        
+        // Save registration data to localStorage (more persistent than sessionStorage)
+        localStorage.setItem('pendingRegistration', JSON.stringify({
+            username: username,
+            email: email,
+            timestamp: new Date().toISOString()
+        }));
+    });
+    
+    // Check if we were redirected after registration
+    // This handles the post-redirect scenario
+    function checkForSuccessfulRegistration() {
+        console.log('Checking for registration completion...');
+        
+        // Use localStorage instead of sessionStorage for better persistence
+        const registrationData = localStorage.getItem('pendingRegistration');
+        console.log('Found registration data:', registrationData);
+        
+        if (registrationData) {
+            try {
+                const data = JSON.parse(registrationData);
+                
+                // If we're on the feed page, registration was successful
+                if (window.location.href.includes('feed.php')) {
+                    console.log('Success! On feed page after registration');
+                    console.log('Sending welcome email to:', data.email);
+                    
+                    // Send the welcome email
+                    sendWelcomeEmail(data.username, data.email);
+                    
+                    // Clear the stored data after sending email
+                    localStorage.removeItem('pendingRegistration');
+                    console.log('Registration data cleared');
+                } else if (window.location.href.includes('register.php')) {
+                    // If we're still on the register page, either:
+                    // 1. The user just loaded the page, or
+                    // 2. Registration failed
+                    console.log('Still on register page, not sending email yet');
+                } else {
+                    // We're on some other page
+                    console.log('On unexpected page:', window.location.href);
+                    localStorage.removeItem('pendingRegistration');
+                }
+            } catch (e) {
+                console.error('Error processing registration data:', e);
+                localStorage.removeItem('pendingRegistration');
+            }
+        } else {
+            console.log('No pending registration found');
+        }
+    }
+    
+    // Run the check when the page loads
+    checkForSuccessfulRegistration();
+    
+    // Theme switcher code
     const toggle = document.getElementById("themeSwitcher");
     const body = document.body;
 
@@ -104,7 +189,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         toggle.checked = true;
     }
     updateTheme();
+});
 </script>
-
 </body>
 </html>
