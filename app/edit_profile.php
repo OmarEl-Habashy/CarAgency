@@ -80,5 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <button type="submit" class="btn btn-primary">Save Changes</button>
     <button type="button" class="btn btn-secondary" onclick="location.href='profile.php'">Cancel</button>
 </form>
+
 </body>
 </html>

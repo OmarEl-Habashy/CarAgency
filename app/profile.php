@@ -85,13 +85,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
                 <div class="username-handle">@<?php echo htmlspecialchars(strtolower($user->getUsername())); ?></div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 20px;">
-                <?php if ($user->getProfilePicture()): ?>
-                    <img src="<?php echo htmlspecialchars($user->getProfilePicture()); ?>" class="profile-avatar" alt="Profile Picture">
-                <?php else: ?>
+
                     <div class="profile-avatar">
                         <?php echo strtoupper(substr(htmlspecialchars($user->getUsername()), 0, 1)); ?>
                     </div>
-                <?php endif; ?>
                 <div class="follow-button-container">
                     <?php if (!$isOwnProfile): ?>
                         <button class="follow-button <?php echo $isFollowing ? 'following' : ''; ?>" data-user-id="<?php echo $user->getUserId(); ?>">
