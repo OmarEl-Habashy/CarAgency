@@ -57,7 +57,7 @@ $bio = $userObj ? $userObj->getBio() : '';
 <html>
 <head>
     <title>Feed</title>
-    <link rel="stylesheet" href="/Project/public/css/feed.css">
+    <link rel="stylesheet" href="../public/css/feed.css">
     <script defer src="../public/js/feed.js"></script>
 </head>
 <body>
