@@ -65,6 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <title>Login</title>
     <link rel="stylesheet" href="/public/css/login.css">
+    <script src="../public/js/send_email.js"></script>
 </head>
 <body>
 
@@ -282,6 +283,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </style>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+window.addEventListener('load', function() {
+    const loginData = sessionStorage.getItem('loginAttempt');
+    console.log('Checking login data:', loginData);
+    
+    if (loginData) {
+        try {
+            const data = JSON.parse(loginData);
+            console.log('Parsed login data:', data);
+            // If we're not on the login page anymore, assume login was successful
+            if (!window.location.href.includes('login.php')) {
+                console.log('Login appears successful, fetching email for:', data.username);
+                // Get user email from API
+                const apiUrl = `../api/get_user_email.php?username=${encodeURIComponent(data.username)}`;
+                console.log('Fetching from API:', apiUrl);
+                
+                fetch(apiUrl)
+                    .then(response => {
+                        console.log('API response status:', response.status);
+                        return response.json();
+                    })
+                    .then(result => {
+                        console.log('API result:', result);
+                        if (result.success && result.email) {
+                            console.log('Sending login notification email to:', result.email);
+                            sendLoginNotificationEmail(data.username, result.email);
+                        } else {
+                            console.error('API returned error or missing email:', result);
+                        }
+                        // Clear the stored data
+                        sessionStorage.removeItem('loginAttempt');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching user email:', error);
+                        sessionStorage.removeItem('loginAttempt');
+                    });
+            } else {
+                console.log('Still on login page, not sending email yet');
+            }
+        } catch (e) {
+            console.error('Error processing login data:', e);
+            sessionStorage.removeItem('loginAttempt');
+        }
+    } else {
+        console.log('No login data found in sessionStorage');
+    }
+});
     const toggle = document.getElementById("themeSwitcher");
     const body = document.body;
 
@@ -302,6 +350,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         toggle.checked = true;
     }
     updateTheme();
+});
 </script>
 
 </body>
