@@ -58,28 +58,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
-    <link rel="stylesheet" type="text/css" href="../assets/css/editprofile.css">
+    <link rel="stylesheet" href="../public/css/editprofile.css">
 </head>
 <body>
-    <h2>Edit Profile</h2>
-    
-    <?php if (!empty($error_message)): ?>
-        <div class="error"><?php echo $error_message; ?></div>
-    <?php endif; ?>
-    
-<form action="edit_profile.php" method="POST">
-    <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($currentUser->getUsername()); ?>" required>
+    <div class="container">
+        <a href="profile.php" class="back-to-profile">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                <path d="M20 11H7.414l4.293-4.293a1 1 0 00-1.414-1.414l-6 6a1 1 0 000 1.414l6 6a1 1 0 001.414-1.414L7.414 13H20a1 1 0 100-2z"></path>
+            </svg>
+            Back to Profile
+        </a>
+        
+        <h2>Edit Profile</h2>
+        
+        <?php if (!empty($error_message)): ?>
+            <div class="error"><?php echo htmlspecialchars($error_message); ?></div>
+        <?php endif; ?>
+        
+        <form action="edit_profile.php" method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" 
+                       value="<?php echo htmlspecialchars($currentUser->getUsername()); ?>" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="bio">Bio</label>
+                <textarea id="bio" name="bio" rows="4"><?php echo htmlspecialchars($currentUser->getBio() ?? ''); ?></textarea>
+            </div>
+            
+            <div class="button-container">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-secondary" onclick="location.href='profile.php'">Cancel</button>
+            </div>
+        </form>
     </div>
-    <div class="form-group">
-        <label for="bio">Bio:</label>
-        <textarea id="bio" name="bio" rows="4" cols="50"><?php echo htmlspecialchars($currentUser->getBio() ?? ''); ?></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Save Changes</button>
-    <button type="button" class="btn btn-secondary" onclick="location.href='profile.php'">Cancel</button>
-</form>
-
 </body>
 </html>

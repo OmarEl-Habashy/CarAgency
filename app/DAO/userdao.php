@@ -81,7 +81,7 @@ class UserDAO {
     // Update a user
     public function updateUser(User $user) {
         try {
-            $sql = "UPDATE Users SET Username = ?, Email = ?, PassW = ?, Bio = ?, ProfilePicture = ? WHERE UserID = ?";
+            $sql = "UPDATE Users SET Username = ?, Email = ?, PassW = ?, Bio = ? WHERE UserID = ?";
             $stmt = $this->db->prepare($sql);
             
             $username = $user->getUsername();
@@ -96,7 +96,7 @@ class UserDAO {
             $stmt->bindParam(3, $password);
             $stmt->bindParam(4, $bio);
             // $stmt->bindParam(5, $profilePicture);
-            $stmt->bindParam(6, $userId, PDO::PARAM_INT);
+            $stmt->bindParam(5, $userId, PDO::PARAM_INT);
             
             return $stmt->execute();
         } catch (PDOException $e) {

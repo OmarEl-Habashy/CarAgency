@@ -1,4 +1,3 @@
-
 <?php
 function renderPost($postData, $userId) {
     extract($postData);
@@ -18,7 +17,10 @@ function renderPost($postData, $userId) {
         <div class="post-caption"><?php echo nl2br(htmlspecialchars($caption)); ?></div>
         <?php if ($contentURL): ?>
             <div class="post-media">
-                <img src="<?php echo htmlspecialchars($contentURL); ?>" alt="Post media">
+                <img src="<?php echo htmlspecialchars($contentURL); ?>" 
+                     alt="Post media" 
+                     class="post-image"
+                     data-full-url="<?php echo htmlspecialchars($contentURL); ?>">
             </div>
         <?php endif; ?>
         <div class="post-meta">
