@@ -68,14 +68,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile: <?php echo htmlspecialchars($profileUsername); ?></title>
     <link rel="stylesheet" href="../public/css/profile.css">
+    <link rel="stylesheet" href="../public/css/feed.css">
 </head>
 <body>
-    <div class="theme-toggle">
-        <label class="switch">
-            <input type="checkbox" id="themeSwitch">
-            <span class="slider"></span>
-        </label>
-    </div>
+
     <div class="container">
         <?php if ($profile_error): ?>
             <p class="error-message"><?php echo htmlspecialchars($profile_error); ?></p>
@@ -118,27 +114,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $user && 
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Theme toggle logic
-            const themeSwitch = document.getElementById('themeSwitch');
-            function setTheme(mode) {
-                if (mode === 'light') {
-                    document.body.classList.remove('dark-mode');
-                    themeSwitch.checked = false;
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    document.body.classList.add('dark-mode');
-                    themeSwitch.checked = true;
-                    localStorage.setItem('theme', 'dark');
-                }
-            }
-            if (themeSwitch) {
-                const saved = localStorage.getItem('theme');
-                if (saved === 'light') setTheme('light');
-                else setTheme('dark');
-                themeSwitch.addEventListener('change', function() {
-                    setTheme(this.checked ? 'dark' : 'light');
-                });
-            }
 
             // Follow/Unfollow logic
             const followButton = document.querySelector('.follow-button');

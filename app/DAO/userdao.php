@@ -20,14 +20,14 @@ class UserDAO {
             $password = $user->getHashedPassword();
             $bio = $user->getBio();
             $createdAt = $user->getCreatedAt();
-            $profilePicture = $user->getProfilePicture();
+            // $profilePicture = $user->getProfilePicture();
             
             $stmt->bindParam(1, $username);
             $stmt->bindParam(2, $email);
             $stmt->bindParam(3, $password);
             $stmt->bindParam(4, $bio);
             $stmt->bindParam(5, $createdAt);
-            $stmt->bindParam(6, $profilePicture);
+            // $stmt->bindParam(6, $profilePicture);
             
             $stmt->execute();
             
@@ -88,14 +88,14 @@ class UserDAO {
             $email = $user->getEmail();
             $password = $user->getHashedPassword();
             $bio = $user->getBio();
-            $profilePicture = $user->getProfilePicture();
+            // $profilePicture = $user->getProfilePicture();
             $userId = $user->getUserId();
             
             $stmt->bindParam(1, $username);
             $stmt->bindParam(2, $email);
             $stmt->bindParam(3, $password);
             $stmt->bindParam(4, $bio);
-            $stmt->bindParam(5, $profilePicture);
+            // $stmt->bindParam(5, $profilePicture);
             $stmt->bindParam(6, $userId, PDO::PARAM_INT);
             
             return $stmt->execute();
